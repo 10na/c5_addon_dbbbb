@@ -51,7 +51,11 @@ SQL;
 		}
 
 		Database::setLogging(true);
-		Events::extend('on_render_complete', $this, 'shutdown', __FILE__);
+        
+        $u = new User();
+        if ($u->isLoggedIn()) {
+            Events::extend('on_render_complete', $this, 'shutdown', __FILE__);
+        }
 	}
 
 	public static function shutdown() {
@@ -107,12 +111,30 @@ RESET;
 	padding: 10px 15px 10px 15px;
 
 }
+#dbbbb-sql-log-button-container {
+    position:absolute;
+    left: 10px;
+    bottom: 10px;
+}
 CSS;
 		echo '<style>'.$reset.$css.'</style>';
+        echo '<script>
+            $(document).ready(function() {
+                $("#dbbbb-sql-log-button").click(function() {
+                    $("#dbbbb-sql-log").dialog({ height: 500, width: 800 });
+                });
+            });
+        
+        </script>';
 		Database::setLogging(false);
 		$db = Loader::db();
 		$perf = NewPerfMonitor($db);
-		echo '<div id="dbbbb-sql-log">';
+        
+        echo '<div class="ccm-ui" id="dbbbb-sql-log-button-container">';
+        echo '<button class="btn" id="dbbbb-sql-log-button">' . t('show sql trace') . '</button>';
+        echo '</div>';
+        
+		echo '<div id="dbbbb-sql-log" style="display:none;">';
 		echo $perf->SuspiciousSQL();
 		echo $perf->ExpensiveSQL();
 		echo '</div>';
